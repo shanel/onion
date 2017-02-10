@@ -28,14 +28,6 @@ const (
 	defaultTorContainer = "tor-router"
 )
 
-// Driver represents the interface for the network plugin driver.
-type Driver struct {
-	network.Driver
-	dcli     *client.Client
-	networks map[string]*NetworkState
-	sync.Mutex
-}
-
 // endpointConfiguration represents the user specified configuration for the sandbox endpoint.
 type endpointConfiguration struct {
 	PortBindings []types.PortBinding
@@ -60,18 +52,11 @@ type torEndpoint struct {
 	portMapping     []types.PortBinding // Operation port bindings
 }
 
-// NetworkState is filled in at network creation time.
-// It contains state that we wish to keep for each network.
-type NetworkState struct {
-	BridgeName            string
-	MTU                   int
-	Gateway               string
-	GatewayMask           string
-	endpoints             map[string]*torEndpoint // key: endpoint id
-	portMapper            *portmapper.PortMapper
-	natChain, filterChain *iptables.ChainInfo
-	iptCleanFuncs         iptablesCleanFuncs
-	blockUDP              bool
+// Driver represents the interface for the network plugin driver.
+type Driver struct {
+	network.Driver
+	dcli     *client.Client
+	networks map[string]*NetworkState
 	sync.Mutex
 }
 
@@ -298,6 +283,7 @@ func (d *Driver) EndpointInfo(r *network.InfoRequest) (*network.InfoResponse, er
 	res := &network.InfoResponse{
 		Value: make(map[string]string),
 	}
+	// TODO(shanel): If this only ever returns nil, should it return an error at all?
 	return res, nil
 }
 
