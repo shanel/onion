@@ -25,6 +25,9 @@ const (
 
 	defaultMTU          = 1500
 	defaultTorContainer = "tor-router"
+
+	ipv4ForwardConf     = "/proc/sys/net/ipv4/ip_forward"
+	ipv4ForwardConfPerm = 0644
 )
 
 // endpointConfiguration represents the user specified configuration for the sandbox endpoint.
@@ -84,7 +87,7 @@ func (d *Driver) CreateNetwork(r *network.CreateNetworkRequest) error {
 	}
 
 	// we need to have ip forwarding setup for this to work w routing
-	if err = setupIPForwarding(); err != nil {
+	if err = setupIPForwarding(ipv4ForwardConf, ipv4ForwardConfPerm); err != nil {
 		return err
 	}
 

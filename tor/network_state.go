@@ -167,19 +167,18 @@ func (n *NetworkState) setupIPTables(torIP string) error {
 		return fmt.Errorf("Failed to setup IP tables, cannot acquire interface address for bridge %s: %v", n.BridgeName, err)
 	}
 
+	ipnet := addrv4.(*net.IPNet)
 	ic := &iptablesConfig{
+		addr: &net.IPNet{
+			IP:   ipnet.IP.Mask(ipnet.Mask),
+			Mask: ipnet.Mask,
+		},
 		bridgeName:  n.BridgeName,
 		torIP:       torIP,
 		hairpinMode: hairpinMode,
 		iccMode:     true,
 		ipMasqMode:  true,
 		blockUDP:    n.blockUDP,
-	}
-
-	ipnet := addrv4.(*net.IPNet)
-	ic.addr = &net.IPNet{
-		IP:   ipnet.IP.Mask(ipnet.Mask),
-		Mask: ipnet.Mask,
 	}
 
 	if err = ic.setupIPTablesInternal(true); err != nil {
