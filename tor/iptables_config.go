@@ -1,10 +1,18 @@
 package tor
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/docker/libnetwork/iptables"
 )
+
+type iptRule struct {
+	table   iptables.Table
+	chain   string
+	preArgs []string
+	args    []string
+}
 
 type iptablesConfig struct {
 	bridgeName  string
@@ -16,11 +24,34 @@ type iptablesConfig struct {
 	blockUDP    bool
 }
 
-type iptRule struct {
-	table   iptables.Table
-	chain   string
-	preArgs []string
-	args    []string
+func programChainRule(rule iptRule, ruleDescr string, enable bool) error {
+	var (
+		prefix    []string
+		condition bool
+		doesExist = iptables.Exists(rule.table, rule.chain, rule.args...)
+	)
+
+	action := iptables.Insert
+	condition = !doesExist
+	if !enable {
+		action = iptables.Delete
+		condition = doesExist
+	}
+	prefix = []string{string(action), rule.chain}
+
+	if rule.preArgs != nil {
+		prefix = append(rule.preArgs, prefix...)
+	}
+
+	if condition {
+		if output, err := iptables.Raw(append(prefix, rule.args...)...); err != nil {
+			return fmt.Errorf("Unable to %s %s rule: %v", action, ruleDescr, err)
+		} else if len(output) != 0 {
+			return &iptables.ChainError{Chain: rule.chain, Output: output}
+		}
+	}
+
+	return nil
 }
 
 func (ic *iptablesConfig) setupIPTablesInternal(enable bool) error {

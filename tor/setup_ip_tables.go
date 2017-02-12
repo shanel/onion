@@ -36,36 +36,6 @@ func setupIPChains() (*iptables.ChainInfo, *iptables.ChainInfo, error) {
 	return natChain, filterChain, nil
 }
 
-func programChainRule(rule iptRule, ruleDescr string, enable bool) error {
-	var (
-		prefix    []string
-		condition bool
-		doesExist = iptables.Exists(rule.table, rule.chain, rule.args...)
-	)
-
-	action := iptables.Insert
-	condition = !doesExist
-	if !enable {
-		action = iptables.Delete
-		condition = doesExist
-	}
-	prefix = []string{string(action), rule.chain}
-
-	if rule.preArgs != nil {
-		prefix = append(rule.preArgs, prefix...)
-	}
-
-	if condition {
-		if output, err := iptables.Raw(append(prefix, rule.args...)...); err != nil {
-			return fmt.Errorf("Unable to %s %s rule: %v", action, ruleDescr, err)
-		} else if len(output) != 0 {
-			return &iptables.ChainError{Chain: rule.chain, Output: output}
-		}
-	}
-
-	return nil
-}
-
 func setIcc(bridgeIface string, iccEnable, insert bool) error {
 	var (
 		table      = iptables.Filter
