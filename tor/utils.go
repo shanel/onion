@@ -116,19 +116,14 @@ func getGatewayIP(r *network.CreateNetworkRequest) (string, string, error) {
 	// also in that case, we'll need a function to determine the correct default gateway based on it's IP/Mask
 	var gatewayIP string
 
-	if len(r.IPv6Data) > 0 {
-		if r.IPv6Data[0] != nil {
-			if r.IPv6Data[0].Gateway != "" {
-				gatewayIP = r.IPv6Data[0].Gateway
-			}
-		}
-	}
 	// Assumption: IPAM will provide either IPv4 OR IPv6 but not both
 	// We may want to modify this in future to support dual stack
-	if len(r.IPv4Data) > 0 {
-		if r.IPv4Data[0] != nil {
-			if r.IPv4Data[0].Gateway != "" {
-				gatewayIP = r.IPv4Data[0].Gateway
+	for _, d := range [][]*network.IPAMData{r.IPv6Data, r.IPv4Data} {
+		if len(d) > 0 {
+			if d[0] != nil {
+				if d[0].Gateway != "" {
+					gatewayIP = d[0].Gateway
+				}
 			}
 		}
 	}
