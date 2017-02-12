@@ -122,23 +122,31 @@ func (d *Driver) CreateNetwork(r *network.CreateNetworkRequest) error {
 	return nil
 }
 
+func (d *Driver) getNetworkState(id string) (*NetworkState, error) {
+	d.Lock()
+	defer d.Unlock()
+	ns, ok := d.networks[id]
+	if !ok {
+		return ns, types.InternalMaskableErrorf("network %s does not exist", id)
+	}
+	return ns, nil
+}
+
 // DeleteNetwork deletes a given tor network.
 func (d *Driver) DeleteNetwork(r *network.DeleteNetworkRequest) error {
 	logrus.Debugf("Delete network request: %+v", r)
 
 	// Get the network handler and make sure it exists
-	d.Lock()
-	ns, ok := d.networks[r.NetworkID]
-	d.Unlock()
-	if !ok {
-		return types.InternalMaskableErrorf("network %s does not exist", r.NetworkID)
+	ns, err := d.getNetworkState(r.NetworkID)
+	if err != nil {
+		return err
 	}
 
 	if ns == nil {
 		return driverapi.ErrNoNetwork(r.NetworkID)
 	}
 
-	err := ns.deleteBridge(r.NetworkID)
+	err = ns.deleteBridge(r.NetworkID)
 	if err != nil {
 		return fmt.Errorf("Deleting bridge for network %s failed: %s", r.NetworkID, err)
 	}
@@ -152,11 +160,9 @@ func (d *Driver) CreateEndpoint(r *network.CreateEndpointRequest) (*network.Crea
 	logrus.Debugf("Create endpoint request: %+v", r)
 
 	// Get the network handler and make sure it exists
-	d.Lock()
-	ns, ok := d.networks[r.NetworkID]
-	d.Unlock()
-	if !ok {
-		return nil, types.InternalMaskableErrorf("network %s does not exist", r.NetworkID)
+	ns, err := d.getNetworkState(r.NetworkID)
+	if err != nil {
+		return nil, err
 	}
 
 	if ns == nil {
@@ -229,11 +235,9 @@ func (d *Driver) DeleteEndpoint(r *network.DeleteEndpointRequest) error {
 	logrus.Debugf("Delete endpoint request: %+v", r)
 
 	// Get the network handler and make sure it exists
-	d.Lock()
-	ns, ok := d.networks[r.NetworkID]
-	d.Unlock()
-	if !ok {
-		return types.InternalMaskableErrorf("network %s does not exist", r.NetworkID)
+	ns, err := d.getNetworkState(r.NetworkID)
+	if err != nil {
+		return err
 	}
 
 	if ns == nil {
@@ -291,11 +295,9 @@ func (d *Driver) Join(r *network.JoinRequest) (*network.JoinResponse, error) {
 	logrus.Debugf("Join request: %+v", r)
 
 	// Get the network handler and make sure it exists
-	d.Lock()
-	ns, ok := d.networks[r.NetworkID]
-	d.Unlock()
-	if !ok {
-		return nil, types.InternalMaskableErrorf("network %s does not exist", r.NetworkID)
+	ns, err := d.getNetworkState(r.NetworkID)
+	if err != nil {
+		return nil, err
 	}
 
 	if ns == nil {
@@ -337,11 +339,9 @@ func (d *Driver) Leave(r *network.LeaveRequest) error {
 	logrus.Debugf("Leave request: %+v", r)
 
 	// Get the network handler and make sure it exists
-	d.Lock()
-	ns, ok := d.networks[r.NetworkID]
-	d.Unlock()
-	if !ok {
-		return types.InternalMaskableErrorf("network %s does not exist", r.NetworkID)
+	ns, err := d.getNetworkState(r.NetworkID)
+	if err != nil {
+		return err
 	}
 
 	if ns == nil {
