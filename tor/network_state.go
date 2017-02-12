@@ -1,11 +1,16 @@
 package tor
 
 import (
+	"bytes"
+	"fmt"
 	"net"
 	"sync"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/docker/libnetwork/iptables"
+	"github.com/docker/libnetwork/netutils"
 	"github.com/docker/libnetwork/portmapper"
+	"github.com/docker/libnetwork/types"
 )
 
 var (
@@ -142,7 +147,7 @@ func (n *NetworkState) releasePortsInternal(bindings []types.PortBinding) error 
 	}
 
 	if errorBuf.Len() != 0 {
-		return errors.New(errorBuf.String())
+		return fmt.Errorf(errorBuf.String())
 	}
 	return nil
 }

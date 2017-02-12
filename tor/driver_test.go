@@ -14,7 +14,7 @@ func TestEndpointInfo(t *testing.T) {
 	}
 
 	ir := &network.InfoRequest{}
-	d := tor.Driver{}
+	d := Driver{}
 	got, err := d.EndpointInfo(ir)
 	if !reflect.DeepEqual(want, got) || err != nil {
 		t.Fatalf("EndpointInfo(%v) == %v, %v; want %v, nil", ir, got, err, want)
