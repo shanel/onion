@@ -1,5 +1,13 @@
 package tor
 
+import (
+	"net"
+	"sync"
+
+	"github.com/docker/libnetwork/iptables"
+	"github.com/docker/libnetwork/portmapper"
+)
+
 var (
 	defaultBindingIP        = net.IPv4(0, 0, 0, 0)
 	maxAllocatePortAttempts = 10

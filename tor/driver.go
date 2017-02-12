@@ -9,7 +9,6 @@ import (
 	"github.com/docker/engine-api/client"
 	"github.com/docker/go-plugins-helpers/network"
 	"github.com/docker/libnetwork/driverapi"
-	"github.com/docker/libnetwork/iptables"
 	"github.com/docker/libnetwork/portmapper"
 	"github.com/docker/libnetwork/types"
 	"github.com/vishvananda/netlink"

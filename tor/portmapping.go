@@ -1,15 +1,10 @@
 package tor
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"net"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/libnetwork/netlabel"
-	"github.com/docker/libnetwork/types"
 )
 
 // TODO: The implementation of this bullshit with marshal and unmarshal sucks. Fix it.

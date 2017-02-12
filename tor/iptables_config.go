@@ -1,5 +1,11 @@
 package tor
 
+import (
+	"net"
+
+	"github.com/docker/libnetwork/iptables"
+)
+
 type iptablesConfig struct {
 	bridgeName  string
 	torIP       string
